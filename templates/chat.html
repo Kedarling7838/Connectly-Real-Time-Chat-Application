@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connectly · Chat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body class="chat-body">
+  <div class="chat-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-inline"><span class="brand-mark small-mark">C</span><span>Connectly</span></div>
+        <form method="post" action="{{ url_for('logout') }}"><button class="btn btn-sm btn-light" title="Log out">Log out</button></form>
+      </div>
+      <div class="profile-strip">
+        <div class="avatar current-avatar">{{ user.username[0]|upper }}</div>
+        <div class="min-w-0"><div class="fw-semibold text-truncate">{{ user.username }}</div><div class="small text-success">● Online</div></div>
+      </div>
+      <div class="px-3 pt-3 pb-2 d-flex justify-content-between align-items-center">
+        <span class="text-uppercase small fw-bold text-secondary letter-space">Messages</span>
+        <span class="badge text-bg-light">{{ contacts|length }}</span>
+      </div>
+      <div class="contact-list" id="contactList">
+        {% for contact in contacts %}
+        <button class="contact-item" data-user-id="{{ contact.id }}" data-username="{{ contact.username }}">
+          <div class="avatar">{{ contact.username[0]|upper }}</div>
+          <div class="contact-meta">
+            <div class="d-flex justify-content-between gap-2"><span class="contact-name">{{ contact.username }}</span><span class="small text-secondary">{{ (contact.last_time or '')[11:16] }}</span></div>
+            <div class="contact-preview">{{ contact.last_message or 'Start a conversation' }}</div>
+          </div>
+        </button>
+        {% else %}
+        <div class="empty-contacts p-4 text-center text-secondary">
+          <div class="display-6">👋</div>
+          <p class="mb-1 fw-semibold">No contacts yet</p>
+          <p class="small">Register another account in a different browser or private window to start chatting.</p>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="sidebar-footer small text-secondary">Private demo chat · localhost</div>
+    </aside>
+
+    <main class="conversation">
+      <header class="conversation-header">
+        <div id="emptyAvatar" class="avatar d-none">?</div>
+        <div class="min-w-0">
+          <div class="fw-bold" id="conversationTitle">Welcome to Connectly</div>
+          <div class="small text-secondary" id="conversationSubtitle">Choose a person to start a conversation</div>
+        </div>
+        <div class="ms-auto d-flex gap-2 align-items-center">
+          <span class="connection-dot" id="connectionDot"></span><span class="small text-secondary" id="connectionLabel">Connecting…</span>
+        </div>
+      </header>
+      <div class="welcome-panel" id="welcomePanel">
+        <div class="welcome-icon">✉</div>
+        <h2 class="h4 fw-bold mt-3">Your conversations, all in one place</h2>
+        <p class="text-secondary">Select a contact on the left to send a real-time message.</p>
+      </div>
+      <section class="messages-area d-none" id="messagesArea" aria-live="polite">
+        <div class="messages-list" id="messagesList"></div>
+      </section>
+      <div class="typing-hint d-none" id="typingHint">Messages are sent in real time</div>
+      <form class="composer d-none" id="composerForm">
+        <button class="emoji-button" type="button" id="emojiButton" title="Insert emoji">☺</button>
+        <input class="form-control" id="messageInput" maxlength="2000" placeholder="Write a message… Try :smile:" autocomplete="off">
+        <button class="btn btn-primary send-button" type="submit">Send <span aria-hidden="true">➤</span></button>
+      </form>
+      <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+    </main>
+  </div>
+  <script>
+    window.CHAT_CONFIG = {
+      currentUserId: {{ user.id|tojson }},
+      currentUsername: {{ user.username|tojson }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>
